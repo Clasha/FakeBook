@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.ReplyDAO">
+
+	<select id="selectReplyByBoardNum" parameterType="hashmap" resultType="Reply">
+		select * from(select a.*, rownum r from (select * from reply where board_num=#{board_num}) a)
+		<!-- where r between #{start} and #{end} -->
+	</select>
+	
+	<insert id="insertReply" parameterType="hashmap">
+		insert into reply (reply_num, board_num, m_num, parent_reply, r_date, r_content)
+		values(seq_reply_num.nextval, #{board_num, jdbcType=INTEGER}, #{m_num, jdbcType=INTEGER},
+		#{parent_reply, jdbcType=INTEGER}, SYSDATE, #{r_content, jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="updatereply" parameterType="hashmap">
+		update reply set r_content=#{r_content, jdbcType=VARCHAR} where reply_num=#{reply_num, jdbcType=INTEGER}
+	</update>
+	
+	<delete id="deletereply">
+		delete from reply where reply_num=#{reply_num, jdbcType=INTEGER}
+	</delete>
+</mapper>

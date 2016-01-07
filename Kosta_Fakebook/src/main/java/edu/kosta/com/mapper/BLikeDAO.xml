@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+     
+<mapper namespace="edu.kosta.com.dao.BLikeDAO">
+	<insert id="boardLike">
+		insert into b_like (board_num, m_num, like_date) values(#{board_num}, #{m_num}, sysdate)
+	</insert>
+	
+	<delete id="boardLikeCancel">
+		delete from b_like where board_num=#{board_num} and m_num=#{m_num}
+	</delete>
+
+</mapper>

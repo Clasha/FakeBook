@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.HashtagDAO">
+
+	<insert id="insertHashtag">
+		<choose>
+			<when test="board_num == null || board_num == 0">
+				insert into hash values(#{hashtag}, (SELECT MAX(board_num) FROM board))			
+			</when>
+			<otherwise>
+				insert into hash values(#{hashtag}, #{board_num})
+			</otherwise>
+		</choose>		
+	</insert>
+
+	<delete id="deleteHashtag">
+		delete from hash where board_num=#{board_num}
+	</delete>
+</mapper>

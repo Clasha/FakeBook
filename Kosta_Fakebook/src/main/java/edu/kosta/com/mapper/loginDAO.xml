@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- db와 연결되는 method가 있는곳을 namespace로 연결해준다. -->
+<mapper namespace="edu.kosta.com.dao.loginDAO">
+ 
+    
+ 
+    <!-- id의 경우에는 loginDAO.java에 동일하게 사용해야된다. id가 곧 method 이름이다. -->
+    <!-- resultType은 method의 반환 타입 parameterType은 method가 매개변수로 받는타입이된다. -->
+    <select id="emailCheck" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+    	select * from member where email=#{email}
+    </select>
+    
+     <select id="pwdCheck" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+    	select * from member where email=#{email} and password=#{password}
+    </select>
+</mapper>

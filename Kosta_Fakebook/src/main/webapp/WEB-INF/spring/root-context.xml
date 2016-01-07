@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	
+	<!-- Mybatis를 사용하는 패키지 경로를 적어준다. -->
+	<context:component-scan base-package="edu.kosta.com.controller" />
+	
+
+	
+	<!-- MyBatis -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+	<!-- <bean id="dataSource"class="org.springframework.jdbc.datasource.SimpleDriverDataSource"> -->
+		<!-- 아래의 부분은 오라클 버전이나 계정에따라 다르게적는다. -->
+		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe" />
+		<property name="username" value="kingsmile" /> 
+		<property name="password" value="oracle" />
+		<property name="driverClassName" value="oracle.jdbc.OracleDriver" />
+		<!-- <property name="driverClass" value="oracle.jdbc.OracleDriver" /> -->
+	</bean>
+
+		
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 아래부분은 매핑할 xml파일이 있는 패키지경로를 설정한다. -->
+		<property name="typeAliasesPackage" value="edu.kosta.com.dto" />
+		<property name="mapperLocations" value="classpath:edu/kosta/com/mapper/*.xml" />
+	</bean>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	
+	<!-- MultipartResolver 설정 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="100000000" /> <!-- 10MB -->
+        <property name="maxInMemorySize" value="100000000" />
+    </bean>
+		
+</beans>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.MaybeFriendDAO">
+    
+   
+   <insert id="insertMaybeFriend" parameterType="hashmap">
+	   <if test="together_friendId == null">
+	   		<if test="friendid != null">
+	   			insert into maybe_friend (myid,maybe_friendId,together_friendId,score,reson)
+	   			values(#{myid},#{maybe_friendId},#{friendid},#{score},#{reson})
+	   		</if>
+	   		<if test="friendid == null">
+	   			insert into maybe_friend (myid,maybe_friendId,score,reson)
+	   			values(#{myid},#{maybe_friendId},#{score},#{reson})
+	   		</if>
+	   		
+	   </if>
+  		 <if test="together_friendId != null">
+	   		insert into maybe_friend (myid,maybe_friendId,together_friendId,score,reson)
+	   		values(#{myid},#{maybe_friendId},#{friendid},#{score},#{reson})
+   		</if>
+   </insert>
+   
+   
+   <select id="check" parameterType="hashmap" resultType="edu.kosta.com.dto.MaybeFriend">
+   		select * from maybe_friend where myid=#{myid} and maybe_friendId=#{maybe_friendId}
+   </select>
+   
+   
+   <select id="samePeopleCheck" parameterType="hashmap" resultType="edu.kosta.com.dto.MaybeFriend">
+   		select * from maybe_friend where myid=#{myid} and together_friendId=#{friendid}
+   </select>
+   
+   <update id="updateTogetherFriend" parameterType="hashmap">
+   		update maybe_friend set together_friendId=together_friendId||'-'||#{plusFriend},
+   		score=score+3 ,reson= reson || #{reson}
+   		where myid=#{myid} and maybe_friendId=#{maybe_friendId}
+   </update><!-- 여기만고치면됨!! -->
+   
+   <select id="getMaybe_list" parameterType="hashmap" resultType="java.lang.Integer">
+   		select maybe_friendId from maybe_friend where myid=#{myid}
+   </select>
+   
+   <select id="getAllList" parameterType="hashmap" resultType="edu.kosta.com.dto.MaybeFriend">
+   		select * from maybe_friend where myid=#{myid} and maybe_friendId=#{maybe_friendId}
+   </select>
+   
+   
+   
+   <update id="updateMaybeFriend" parameterType="hashmap">
+   		update maybe_friend set reson=reson  || #{reson},
+   		score=score+#{score}
+   		where myid=#{myid} and maybe_friendId=#{maybe_friendId}
+   </update>
+   
+   
+   
+   <select id="getScoreSortMaybeList" parameterType="hashmap" resultType="edu.kosta.com.dto.MaybeFriend">
+   		select * from maybe_friend where myid=#{myid} order by score desc
+   </select>
+   
+   <delete id="deleteMaybeFriend" parameterType="hashmap">
+   		delete from maybe_friend where myid=#{myid} and maybe_friendId=#{maybe_friendId}
+   </delete>
+   
+   <delete id="dropMaybeFriends" parameterType="hashmap">
+         delete from maybe_friend where myid=#{myid}
+   </delete>
+   
+   <select id="checkMaybe" parameterType="hashmap" resultType="int">
+      select count(*) from maybe_friend where myid=#{myid} and maybe_friendId=#{maybe_friendId}
+   </select>
+</mapper>

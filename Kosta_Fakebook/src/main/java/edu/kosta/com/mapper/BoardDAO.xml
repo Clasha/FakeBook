@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.BoardDAO">
+
+	<resultMap type="Board" id="Board">
+		<result property="m_num" column="M_NUM" />
+		<result property="email" column="EMAIL" />
+		<result property="reg_date" column="REG_DATE" />
+		<result property="open_level" column="OPEN_LEVEL" />
+		<result property="content" column="CONTENT" />
+		<result property="place" column="PLACE" />
+		<result property="picture" column="PICTURE" />
+		<result property="video" column="VIDEO" />
+	</resultMap>
+
+	<!-- parameterType 에는 구문에 전달될 파라미터의 패키지 경로를 포함한 전체 클래명이나 별칭이 들어간다 -->
+	<insert id="insertBoard" parameterType="hashmap">
+		INSERT INTO BOARD (BOARD_NUM, M_NUM, REG_DATE, OPEN_LEVEL, CONTENT, PLACE,
+		PICTURE, VIDEO)
+		VALUES(SEQ_BOARD.NEXTVAL, #{m_num}, SYSDATE, #{open_level}, #{content}, #{place}, #{picture},
+		#{video})
+	</insert>
+
+	<select id="selectByM_num" parameterType="hashmap" resultMap="Board">
+		SELECT * FROM BOARD WHERE M_NUM=#{m_num} ORDER BY REG_DATE DESC
+	</select>
+	
+<!-- 	<select id="selectPartOfBoard" parameterType="hashmap" resultMap="Board">
+		SELECT * FROM (SELECT A.*, ROWNUM R FROM (SELECT * FROM BOARD WHERE M_NUM=#{m_num} ORDER BY REG_DATE DESC) A)
+		WHERE R BETWEEN #{start} AND #{end} ORDER BY REG_DATE DESC
+	</select> -->
+	
+	<select id="selectPartOfBoard" parameterType="hashmap" resultMap="Board">
+		SELECT * FROM 
+			(SELECT A.*, ROWNUM R,
+			 	case <!-- 이미 좋아요 했으면 b_like=1 -->
+			 		when board_num in (select board_num from b_like where m_num=#{m_num}) then 1
+				else 0 <!-- 아직 좋아요 안했으면 ㅠ -->
+				end as b_like,
+				(select count(*) from b_like where board_num=a.board_num) as bLikeCount
+			 FROM 
+				(SELECT * FROM BOARD 
+				WHERE (M_NUM IN ( <!-- 나와 서로 친구인 사람이 작성한  -->
+						select f1.m_num2 from friend f1, friend f2 
+						where f1.m_num2=f2.m_num1 and f1.m_num1=#{m_num} and f2.m_num2=#{m_num})
+							AND open_level <![CDATA[<]]> 2 
+						)
+					OR m_num = #{m_num} <!--  내가 작성한 -->
+				ORDER BY REG_DATE DESC) A)
+		WHERE R BETWEEN #{start} AND #{end}
+		ORDER BY REG_DATE DESC
+	</select>
+	
+	<select id="selectTimeLine" parameterType="hashmap" resultMap="Board">
+		SELECT * FROM BOARD WHERE M_NUM=#{m_num} order by REG_DATE desc
+	</select>
+	
+	<select id="detail" parameterType="hashmap" resultType="Board">
+		select * from board where board_num=#{board_num}
+<!-- 		select * from board where board_num=#{board_num, jdbcType=INTEGER} -->
+	</select>
+	
+	<select id="selectMyPictureBoardNum" parameterType="hashmap" resultType="Board">
+		<!-- SELECT * FROM board WHERE m_num =#{m_num} AND picture NOT IN ('picture', 'video') -->
+		SELECT * FROM board WHERE m_num =#{m_num} AND picture NOT IN ('picture', 'video') ORDER BY  board_num DESC
+	</select>
+	
+	<select id="selectBoardByHash" parameterType="hashmap" resultMap="Board">
+		SELECT * FROM BOARD 
+		WHERE BOARD_NUM IN (SELECT BOARD_NUM FROM HASH WHERE HASH_CODE LIKE '_'||#{hashtag})
+		ORDER BY REG_DATE DESC
+	</select>
+	
+	<delete id="deleteBoard" parameterType="int">
+		delete from board where board_num=#{board_num}
+	</delete>
+	
+	<update id="updateBoard" parameterType="hashmap">
+		update board set content=#{editContent}, open_level=#{openLevel} where board_num=#{board_num}
+	</update>
+	
+	<select id="selectBoardOne" parameterType="hashmap" resultMap="Board">
+		SELECT * FROM BOARD 
+		WHERE BOARD_NUM=#{boardNum}
+	</select>
+	
+</mapper>

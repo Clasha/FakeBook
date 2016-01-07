@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.FriendDAO">
+	<insert id="insertFriend" parameterType="hashmap">
+		insert into Friend values(#{myid}, #{maybe_friendId})
+	</insert>
+	
+	<delete id="deleteFriend">
+		delete from Friend where m_num1=#{m_num1} and m_num2=#{m_num2}
+	</delete>
+	
+	<select id="getMyFriendList" parameterType="hashmap" resultType="java.lang.Integer">
+    	select m_num1 from friend where m_num2=#{myid} and m_num1 in
+    	(select m_num2 from friend where m_num1=#{myid})
+    </select>
+    
+    <select id="getFriend_FriendList" parameterType="hashmap" resultType="java.lang.Integer">
+    	select m_num1 from friend where m_num2=#{friendid} and
+    	m_num1 in (select m_num2 from friend where m_num1=#{friendid} and m_num2 != #{myid})
+    </select>
+    
+    <select id="friendCehck" parameterType="hashmap" resultType="java.lang.Integer">
+    	select count(m_num1) from friend where m_num1=#{myid} and m_num2=#{maybe_friendId}
+    </select>
+    
+    <select id="getRequestFriendList" parameterType="hashmap" resultType="java.lang.Integer">
+    	select f.m_num from FriendNoti f, notification n 
+    	where f.noti_num=n.noti_num and f.f_num=#{myid} and n.read=0
+    </select>
+  
+    
+    <select id="getRequestedFriendList" parameterType="hashmap" resultType="java.lang.Integer">
+    	select f_num from FriendNoti f, notification n 
+    	where f.noti_num=n.noti_num and f.m_num=#{myid} and n.read=0
+    </select>
+    
+    <delete id="deleteFrinedRequested" parameterType="hashmap">
+    	delete from Friend where m_num1=#{m_num2} and m_num2=#{m_num1}
+    </delete>
+    
+    <delete id="deleteFrinedRequest" parameterType="hashmap">
+    	delete from Friend where m_num1=#{m_num1} and m_num2=#{m_num2}
+    </delete>
+    
+    <select id="getFriendIds" parameterType="hashmap" resultType="java.lang.Integer">
+    	<if test="loginId==null"> <!-- 내친구들의 가져오는 메소드 -->
+	    	select m_num1 from friend where m_num2=#{m_num1} and m_num1 in
+	    	(select m_num2 from friend where m_num1=#{m_num1})
+    	</if>
+    	<if test="loginId!=null">  <!-- 나를 제외한 내친구들의 친구가져오는 메소드 -->
+    		select m_num1 from friend where m_num2=#{m_num1}and m_num1 != #{loginId} and m_num1 in
+	    	(select m_num2 from friend where m_num1=#{m_num1})
+    	</if>
+    </select>
+    
+    <select id="getTogetherFriendIds" parameterType="hashmap" resultType="java.lang.Integer"> <!-- 친구의 친구이면서 나와도 친구인 사람의 id를 찾아오는 메소드 -->
+    	select m_num1 from friend where m_num2=#{loginId} and m_num1 in
+	    (select m_num2 from friend where m_num1=#{loginId} and m_num2 in
+    	(select m_num1 from friend where m_num2=#{m_num1} and m_num1 != #{loginId} and m_num1 in
+	    (select m_num2 from friend where m_num1=#{m_num1})))
+    </select>
+    
+     <select id="getFriendCount" parameterType="hashmap" resultType="java.lang.Integer">
+    	select count(*) from friend where m_num2 = #{m_num} and  m_num1 in
+    	(select m_num2 from friend where m_num1=#{m_num})
+    </select>
+    
+     <select id="isRealFriend" parameterType="hashmap" resultType="java.lang.Integer">
+    	select count(*) from friend where m_num2=#{loginNum} and m_num1=
+    	(select m_num2 from friend where m_num1=#{loginNum} and m_num2=#{f_num})
+    </select>
+    
+    <select id="isfriendRequestCehck" resultType="int">
+       select count(m_num2) from friend where m_num1 = #{m_num1} and m_num2=#{m_num2}
+    </select>
+</mapper>

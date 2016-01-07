@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.MemberDAO">
+    
+    <!-- parameterType 에는 구문에 전달될 파라미터의 패키지 경로를 포함한 전체 클래명이나 별칭이 들어간다  -->
+    <insert id="insertMember" parameterType="hashmap">
+       INSERT INTO member (m_num, email, password, name, birthday) 
+        values(seq_member.nextval, #{email}, #{password}, #{name}, #{birthday})
+    </insert>
+
+	<!-- 마이페이지 -->
+	 <select id="myProfile" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+    	SELECT * FROM member WHERE m_num=#{m_num}
+    </select>
+    
+    <!-- 마이페이지 좌측 친구 미니프로필 -->
+    <select id="myFriendsProfile" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+    	SELECT * FROM member WHERE m_num IN (
+			SELECT m_num1 FROM friend WHERE m_num2=#{m_num1} and m_num1 IN
+				( ( SELECT m_num2 FROM friend WHERE m_num1=#{m_num1} ) )
+		)
+    </select>
+
+ 
+ 	<!-- 회원 검색 : 이메일, 이름 -->
+ 	<select id="searchMembers" parameterType="hashmap" resultType="SearchMemberCommand">
+ 		<!-- select * from member where email like '%'||#{keyword}||'%' or name like '%'||#{keyword}||'%' -->
+ 		SELECT M_NUM, NAME, picture
+ 			<if test="m_num1 != null">
+	 			, 
+	 			CASE <!-- 이미 친구추가했음 -->
+					WHEN m_num IN (SELECT m_num2 FROM Friend WHERE m_num1 = #{m_num1}) THEN 1
+				ELSE 0
+				END AS isFriend
+				,
+				case <!-- 상대방도 나를 추가했음 -->
+					when (m_num in (select m_num1 from friend where m_num2 = #{m_num1})) and
+					 (m_num IN (SELECT m_num2 FROM Friend WHERE m_num1 = #{m_num1})) then 1
+				else 0
+				end as friendshipConfirm
+			</if>
+			from member
+			where (email like '%'||#{keyword}||'%' or name like '%'||#{keyword}||'%')
+			<if test="m_num1 != null">
+				and m_num != #{m_num1}
+			</if>
+ 	</select>
+ 	
+ 	<select id="selectEmailByNum" parameterType="int" resultType="String">
+ 		SELECT EMAIL FROM MEMBER WHERE M_NUM=#{m_num}
+ 	</select>
+ 	
+ 	
+ 	 <select id="getAllMember" parameterType="edu.kosta.com.dto.Member" resultType="edu.kosta.com.dto.Member">
+    	select * from member where email!=#{email}
+    </select>
+    
+    
+	
+ 	<select id="jobListAjax" parameterType="hashmap" resultType="java.lang.String">
+ 		select * from JOBLIST where job  LIKE '%' || #{job} || '%'
+ 	</select>
+ 	
+ 	<update id="memberJobInsert" parameterType="hashmap">
+ 		update member set job=#{job},job_position=#{position},job_addr=#{addr},job_desc=#{job_desc} where email=#{email}
+ 	</update>
+ 	
+ 	<select id="memberJobList" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+ 		select * from member where email=#{email}
+ 	</select>
+ 	
+ 	<update id="memberJobDelete" parameterType="hashmap">
+ 		update member set job='',job_position='',job_addr='',job_desc='' where email=#{email}
+ 	</update>
+ 	
+ 	<update id="memberSchoolInsert" parameterType="hashmap">
+ 		update member set school=#{school},school_desc=#{school_desc},school_into=to_date(#{school_into},'yyyy-mm-dd'),school_out=to_date(#{school_out},'yyyy-mm-dd') where email=#{email}
+ 	</update>
+ 	
+ 	<update id="memberSchoolDelete" parameterType="hashmap">
+ 		update member set school='',school_desc='',school_into='',school_out='' where email=#{email}
+ 	</update>
+ 	
+ 	<update id="memberHighSchoolSave" parameterType="hashmap">
+ 		update member set highschool=#{highschool},highschool_desc=#{highschool_desc},highschool_into=to_date(#{highschool_into},'yyyy-mm-dd'),highschool_out=to_date(#{highschool_out},'yyyy-mm-dd'),highschoolmajor=#{highschoolmajor} where email=#{email}
+ 	</update>
+ 	
+ 	<update id="memberHighSchoolDelete" parameterType="hashmap">
+ 		update member set highschool='',highschool_desc='',highschoolmajor='',highschool_into='',highschool_out='' where email=#{email}
+ 	</update>
+ 	
+ 	<update id="memberBornSave" parameterType="hashmap">
+ 		update member set born=#{born} where email=#{email}
+ 	</update>
+ 	
+ 	<update id="memberBornDelete" parameterType="hashmap">
+ 		update member set born='' where email=#{email}
+ 	</update>
+ 	
+ 	<select id="getSchoolList" parameterType="hashmap" resultType="java.lang.String">
+ 		select * from schoollist where school  LIKE '%' || #{school} || '%'
+ 	</select>
+ 	
+ 	<select id="getHighSchoolList" parameterType="hashmap" resultType="java.lang.String">
+ 		select * from highschoollist where highschool  LIKE '%' || #{highschool} || '%'
+ 	</select>
+ 	
+ 	<select id="getHighSchoolMajorList" parameterType="hashmap" resultType="java.lang.String">
+ 		select * from highschoolmajor where major  LIKE '%' || #{major} || '%'
+ 	</select>
+ 	
+ 	<select id="getMaybe_FriendInfo" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+ 		select * from member where m_num=#{friendId}
+ 	</select>
+ 	
+ 	<select id="getTogether_firendName" parameterType="java.lang.Integer" resultType="java.lang.String">
+ 		select name from member where m_num=#{m_num}
+ 	</select>
+ 	
+ 	<select id="getMemberInfo" parameterType="hashmap" resultType="edu.kosta.com.dto.Member">
+ 		select * from member where m_num=#{m_num}
+ 	</select>
+ 	
+ 	<delete id="memberOut">
+	 	delete from member where m_num=#{m_num}
+	</delete>
+
+	<update id="updatePicture">
+ 		update member set picture=#{picture} where m_num=#{m_num}
+ 	</update>
+	
+	<select id="getMemberPicture" parameterType="hashmap" resultType="java.lang.String">
+		select picture from member where m_num=#{m_num}
+	</select>
+	
+	<select id="getMemberName"  parameterType="hashmap" resultType="java.lang.String" >
+		select name from member where m_num=#{m_num}
+	</select>
+</mapper>

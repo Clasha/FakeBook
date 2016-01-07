@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 여기는 매핑할 MemberMapper.java의 풀패키지명을 적어준다 -->
+<mapper namespace="edu.kosta.com.dao.NotiDAO">
+	<insert id="insertFriendNoti" parameterType="hashmap">
+		<selectKey order="BEFORE" keyProperty="noti_num" resultType="int">
+			SELECT MAX(NOTI_NUM)+1 FROM NOTIFICATION
+		</selectKey>		
+		INSERT ALL
+			INTO NOTIFICATION(NOTI_NUM, M_NUM, READ, NOTI_DATE, NOTI_TYPE)
+			VALUES(#{noti_num}, #{m_num}, 0, sysdate, 0)
+			INTO FRIENDNOTI(NOTI_NUM, M_NUM, F_NUM, ACCEPT)
+			VALUES(#{noti_num}, #{m_num}, #{f_num}, 0)
+			select * from dual
+	</insert>
+	
+	<select id="countFriendNoti" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM NOTIFICATION WHERE M_NUM=#{m_num} AND READ=0 AND NOTI_TYPE=0
+	</select>
+	
+	<select id="selectNoti" parameterType="hashmap" resultType="Notification">
+		select * from notification where m_num=#{m_num} and read=0
+	</select>
+	
+	<select id="selectFriendNoti" parameterType="hashmap" resultType="FriendNoti">
+		select f.*, n.read as read from FriendNoti f, notification n where f.noti_num=n.noti_num and f.m_num=#{m_num} and n.read=0
+	</select>
+	
+	<update id="readNoti" parameterType="int">
+			update NOTIFICATION set read=1 where noti_num=#{noti_num}
+	</update>
+	
+	<update id="updateAccept" parameterType="int">
+			update friendNoti set accept=1 where noti_num=#{noti_num}
+	</update>
+	
+	<update id="deleteFrinedRequested" parameterType="hashmap">
+      update notification set read=1 where noti_num=
+      (select max(noti_num) from FriendNoti where m_num=#{m_num1} and f_num=#{m_num2} )
+   </update>
+	
+	<!-- <update id="requestFriendReadNoti">
+		update notification set read=1 where noti_num=
+		(select noti_num from FriendNoti where m_num=#{m_num1} and f_num=#{m_num2} )
+	</update> -->
+	<update id="requestFriendAcceptUpdate" parameterType="hashmap">
+		update friendNoti set accept=1 where m_num=#{m_num1} and f_num=#{m_num2}
+	</update>
+	
+	<update id="deleteFrinedRequest">
+      update notification set read=1 where noti_num =
+      (select max(noti_num) from FriendNoti where m_num=#{m_num2} and f_num=#{m_num1} )
+   </update>
+   
+   <select id="selectReplyNoti" parameterType="hashmap" resultType="ReplyNoti">
+      select r.*, n.read as read from ReplyNoti r, notification n where r.noti_num=n.noti_num and r.m_num=#{m_num} and n.read=0
+   </select>
+	
+	<select id="getRecentlyNoti" parameterType="hashmap" resultType="java.lang.Integer">
+		select f.m_num  from friendnoti f ,notification n where 
+		f.noti_num=n.noti_num and f.f_num=#{m_num} and n.read=1 and f.accept=1 and n.noti_date>sysdate-1
+	</select>
+	<select id="getRecentlyNoti2" parameterType="hashmap" resultType="java.lang.Integer">
+		select f.f_num  from friendnoti f ,notification n where 
+		f.noti_num=n.noti_num and f.m_num=#{m_num} and n.read=1 and f.accept=1 and n.noti_date>sysdate-1
+	</select>
+	
+	<insert id="commentNoti" parameterType="hashmap">
+	
+		<selectKey order="BEFORE" keyProperty="noti_num" resultType="int">
+			SELECT MAX(NOTI_NUM)+1 FROM NOTIFICATION
+		</selectKey>
+		INSERT ALL
+		into notification (noti_num, m_num, read, noti_date, noti_type) 
+		values(#{noti_num}, #{m_num}, 0, SYSDATE, 1)
+		INTO replyNOTI(NOTI_NUM, M_NUM, reply_num, board_num)
+			VALUES(#{noti_num}, #{m_num}, (select max(reply_num) from reply), #{board_num})
+			select * from dual
+	</insert>
+	
+	<update id="readupdate" parameterType="int">
+		update notification set read=1 where noti_num=#{noti_num, jdbcType=INTEGER}
+	</update>
+	
+	
+	
+	<insert id="insertLikeNoti">
+		<selectKey order="BEFORE" keyProperty="noti_num" resultType="int">
+			SELECT MAX(NOTI_NUM)+1 FROM NOTIFICATION
+		</selectKey>		
+		INSERT ALL
+			INTO NOTIFICATION(NOTI_NUM, M_NUM, READ, NOTI_DATE, NOTI_TYPE)
+			VALUES(#{noti_num}, (select m_num from board where board_num=#{board_num}), 0, sysdate, 2)
+			INTO likenoti (NOTI_NUM, M_NUM, board_num)
+			VALUES(#{noti_num}, #{m_num}, #{board_num})
+			select * from dual
+	</insert>
+	
+	<select id="getLikeNotis" resultType="LikeNoti">
+		select l.*, n.read as read , n.noti_date as noti_date, m.name as name
+		from LikeNoti l, notification n, member m
+		where l.noti_num=n.noti_num and l.m_num=m.m_num and n.m_num=#{m_num} and n.read=0
+	</select>
+</mapper>

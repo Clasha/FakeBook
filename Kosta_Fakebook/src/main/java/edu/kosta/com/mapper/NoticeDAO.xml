@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    <mapper namespace="edu.kosta.com.dao.NoticeDAO">
+	<!-- 글쓰기 -->
+	<insert id="insertNotice" parameterType="hashmap">
+		insert into NOTICE (notice_num, notice_hit,notice_contents,notice_title) 
+		values(notice_seq.nextval,0, #{notice_contents}, #{notice_title})
+	</insert>
+	
+	<!-- 글 가져오기 -->
+	<select id="getNoticeList" parameterType="hashmap" resultType="edu.kosta.com.dto.Notice">
+		select * from
+	 		(select A.*,ROWNUM r from 
+	 		 	(select * from notice order by notice_num desc) A
+	 	 	)
+ 	 	where r >= #{start} and r &lt;= #{end} <!-- where sal <= 1000 -->
+	</select>
+	
+	<!-- 글 하나 가져오기 -->
+	<select id="getNotice" parameterType="Integer" resultType="edu.kosta.com.dto.Notice">
+ 		select * from notice where notice_num = #{notice_num}
+ 	</select> 
+ 	
+ 	<update id = "updateNotice" parameterType="edu.kosta.com.dto.Notice">
+     update notice set NOTICE_CONTENTS=#{notice_contents},NOTICE_TITLE=#{notice_title}
+      where NOTICE_NUM = #{notice_num}
+ </update>  
+ 
+ <delete id = "deleteNotice" parameterType="edu.kosta.com.dto.Notice">
+     delete from notice where NOTICE_NUM = #{notice_num}
+ </delete>
+
+  <update id = "updateNotice_HIT" parameterType="Integer">
+     update notice set
+     	notice_hit = notice_hit + 1
+     where notice_num = #{notice_num}
+ </update>
+ 
+ <select id="getNoticeCount" resultType="Integer">
+ 	select count(*) from notice
+ </select>
+ 
+ 
+ 
+
+ 	
+</mapper>
+    
